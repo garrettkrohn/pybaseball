@@ -1,13 +1,10 @@
 from enum import Enum
-import os
 from typing import NotRequired, TypedDict
-import re
-# from pybaseball import pitching_stats, cache
 from pandas import DataFrame
 import pybaseball
 from loguru import logger as log
 
-YEAR = 2023
+YEAR = 2025
 NUMBER_OF_STARTERS = 5
 NUMBER_OF_RELIEVERS = 4
 
