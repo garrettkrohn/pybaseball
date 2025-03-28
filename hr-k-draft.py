@@ -4,6 +4,12 @@ from pandas import DataFrame
 import pybaseball
 from loguru import logger as log
 
+class League(Enum):
+    COUSIN_LEAGUE = "cousin_league"
+    AARON_LEAGUE = "aaron_league"
+    ALL_LEAGUES = "all_leagues"
+
+LEAGUE = League.COUSIN_LEAGUE
 YEAR = 2025
 NUMBER_OF_STARTERS = 5
 NUMBER_OF_RELIEVERS = 4
@@ -33,7 +39,7 @@ class Team(TypedDict):
     finalStrikeoutTotal: NotRequired[int]
     finalHomerunTotal: NotRequired[int]
 
-all_teams: list[Team] = [
+cousin_league_teams: list[Team] = [
     {
         "teamName": "Aaron",
         "pitchingPlayers": [
@@ -96,6 +102,17 @@ all_teams: list[Team] = [
     }
 ]
 
+class LeagueToTeams(TypedDict):
+    cousin_league: list[Team]
+    aaron_league: list[Team]
+    all_leagues: list[Team]
+
+league_to_teams: LeagueToTeams = {
+    League.COUSIN_LEAGUE.value: cousin_league_teams,
+    League.AARON_LEAGUE.value: [],
+    League.ALL_LEAGUES.value: cousin_league_teams # add other leagues here with append
+}
+
 def main():
 
     pitching_stats: DataFrame = pybaseball.pitching_stats(start_season=YEAR, qual=0, stat_columns=Stat.STRIKEOUTS.value)
@@ -104,7 +121,10 @@ def main():
     batting_stats: DataFrame = pybaseball.batting_stats(start_season=YEAR, qual=0, stat_columns=Stat.HOMERUNS.value)
     batting_stats_key_value = dataframe_to_key_value_pairs(batting_stats, Stat.HOMERUNS.value)
 
-    teams = add_stats_to_player_objects(pitching_stats_key_value, batting_stats_key_value, all_teams)
+    teams_to_run: list[Team] = league_to_teams.get(LEAGUE.value)
+    if teams_to_run == None or len(teams_to_run) == 0:
+        log.error("no teams selected")
+    teams = add_stats_to_player_objects(pitching_stats_key_value, batting_stats_key_value, teams_to_run)
 
     sorted_teams = sort_teams(teams)
 
